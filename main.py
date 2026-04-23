@@ -41,17 +41,71 @@ namesDict = {"0": "No Match", "20200626_202614": "Emily"}
 
 while True:
     success, img = cap.read()
-    imgS = cv2.resize(img, (0,0), None, 0.5, 0.5)
+    imgS = cv2.resize(img, (0,0), None, 0.6, 0.6)
     imgS = cv2.cvtColor(imgS, cv2.COLOR_BGR2RGB)
 
     faceCurFrame = face_recognition.face_locations(imgS)
     encodeCurFrame = face_recognition.face_encodings(imgS, faceCurFrame)
 
+    # --- FACE QUALITY CHECKS ---
+    feedback_msg = ""
+    brightness = imgS.mean()
 
+    # Check brightness
+    if brightness < 60:
+        feedback_msg = "Too dark"
+    elif brightness > 200:
+        feedback_msg = "Too bright"
+
+    # If a face is detected, check size
+    if len(faceCurFrame) > 0:
+        (top, right, bottom, left) = faceCurFrame[0]
+        face_height = bottom - top
+
+        if face_height < 80:
+            feedback_msg = "Move closer"
+        elif face_height > 250:
+            feedback_msg = "Move back"
+        else:
+            if feedback_msg == "":
+                feedback_msg = "Good distance"
+    else:
+        feedback_msg = "No face detected"
+
+
+
+    # Show detection boxes on imgS (purple box = face detected)
+    imgS_draw = cv2.cvtColor(imgS.copy(), cv2.COLOR_RGB2BGR)
+
+    for (top, right, bottom, left) in faceCurFrame:
+        cv2.rectangle(imgS_draw, (left, top), (right, bottom), (255, 0, 255), 2)  # Purple box
+        cv2.putText(imgS_draw, "Capturing...", (left, top - 10),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 255), 2)
 
     #
     imgBackground[182:182+480, 455:455+640] = img
     # imgBackground[44:44+633, 808:808+414] = imgModeList[0]
+
+    # Draw purple boxes on main UI BEFORE matching
+    x_offset = 455
+    y_offset = 182
+
+    for (top, right, bottom, left) in faceCurFrame:
+        scale = img.shape[1] / imgS.shape[1]
+        top_big = int(top * scale)
+        right_big = int(right * scale)
+        bottom_big = int(bottom * scale)
+        left_big = int(left * scale)
+
+        w_big = right_big - left_big
+        h_big = bottom_big - top_big
+
+        x_draw = x_offset + left_big
+        y_draw = y_offset + top_big
+
+        # Purple capturing box
+        cvzone.cornerRect(imgBackground, (x_draw, y_draw, w_big, h_big),
+                          rt=0, colorC=(255, 0, 255))
 
     for encodeFace, faceLoc in zip(encodeCurFrame, faceCurFrame):
         matches = face_recognition.compare_faces(encodeListKnown, encodeFace)
@@ -84,7 +138,8 @@ while True:
         # Color based on match
         color = (0, 255, 0) if matches[matchIndex] else (0, 0, 255)
 
-        name = namesDict.get(studentIds[matchIndex], "Unknown")
+        # name = namesDict.get(studentIds[matchIndex], "Unknown")
+        name = studentIds[matchIndex]
 
         if faceDis[matchIndex] > 0.6:
             name = "No Match"
@@ -103,6 +158,16 @@ while True:
 
     # cv2.imshow("Webcam", img)
     cv2.imshow("Face Attendance", imgBackground)
+    # cv2.imshow("Detection View", cv2.cvtColor(imgS, cv2.COLOR_RGB2BGR))
+    debug = cv2.cvtColor(imgS.copy(), cv2.COLOR_RGB2BGR) # Draw feedback on imgS_draw
+    cv2.putText(debug, feedback_msg, (10, 30),
+                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+    # cv2.putText(debug, f"Faces detected: {len(faceCurFrame)}", (10, 30),
+    #             cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+    cv2.imshow("Detection View", debug)
+
+    print("Faces detected:", len(faceCurFrame))
+
     cv2.waitKey(1)
 
 
