@@ -30,11 +30,11 @@ for path in modePathList:
 
 #Load the encoding file
 print("Loading Encoded File ...")
-# file = open('EncodeFile.p', 'rb')
-# encodeListKnownWithIds = pickle.load(file)
-# file.close()
-# encodeListKnown, studentIds = encodeListKnownWithIds
-# print(studentIds)
+file = open('EncodeFile.p', 'rb')
+encodeListKnownWithIds = pickle.load(file)
+file.close()
+encodeListKnown, studentIds = encodeListKnownWithIds
+print(studentIds)
 print("Encoded File Loaded")
 
 namesDict = {"0": "No Match", "20200626_202614": "Emily"}
@@ -57,8 +57,8 @@ while True:
         matches = face_recognition.compare_faces(encodeListKnown, encodeFace)
         faceDis = face_recognition.face_distance(encodeListKnown, encodeFace)
 
-        x_offset = 55
-        y_offset = 162
+        x_offset = 455
+        y_offset = 182
 
         # Get best match
         matchIndex = faceDis.argmin()
