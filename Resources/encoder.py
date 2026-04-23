@@ -19,7 +19,7 @@ for img in images:
         encodeListKnown.append(encodings[0])
 
 encodeListKnownWithIds = [encodeListKnown, studentIds]
-with open('EncodeFile.p', 'wb') as file:
+with open('../EncodeFile.p', 'wb') as file:
     pickle.dump(encodeListKnownWithIds, file)
 
 print("Encoding Complete and File Saved")
