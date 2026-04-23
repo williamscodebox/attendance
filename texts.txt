@@ -1,0 +1,23 @@
+install this version of torch
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+
+
+
+Option B — Manual install
+Download FFmpeg (full build):
+https://www.gyan.dev/ffmpeg/builds/
+
+Extract it to:
+
+Code
+C:\ffmpeg
+Add to PATH:
+
+Code
+C:\ffmpeg\bin
+Restart PyCharm.
+
+Test:
+Code
+ffmpeg -version
+If it prints version info, pydub will stop complaining.
